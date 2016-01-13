@@ -25,7 +25,9 @@ package ta4jexamples;
 import eu.verdelhan.ta4j.AnalysisCriterion;
 import eu.verdelhan.ta4j.Strategy;
 import eu.verdelhan.ta4j.Decimal;
+import eu.verdelhan.ta4j.Indicator;
 import eu.verdelhan.ta4j.Rule;
+import eu.verdelhan.ta4j.Tick;
 import eu.verdelhan.ta4j.TimeSeries;
 import eu.verdelhan.ta4j.TradingRecord;
 import eu.verdelhan.ta4j.analysis.CashFlow;
@@ -35,11 +37,32 @@ import eu.verdelhan.ta4j.analysis.criteria.TotalProfitCriterion;
 import eu.verdelhan.ta4j.analysis.criteria.VersusBuyAndHoldCriterion;
 import eu.verdelhan.ta4j.indicators.simple.ClosePriceIndicator;
 import eu.verdelhan.ta4j.indicators.trackers.SMAIndicator;
+import eu.verdelhan.ta4j.indicators.trackers.bollingerbands.BollingerBandsLowerIndicator;
+import eu.verdelhan.ta4j.indicators.trackers.bollingerbands.BollingerBandsMiddleIndicator;
+import eu.verdelhan.ta4j.indicators.trackers.bollingerbands.BollingerBandsUpperIndicator;
 import eu.verdelhan.ta4j.trading.rules.CrossedDownIndicatorRule;
 import eu.verdelhan.ta4j.trading.rules.CrossedUpIndicatorRule;
 import eu.verdelhan.ta4j.trading.rules.StopGainRule;
 import eu.verdelhan.ta4j.trading.rules.StopLossRule;
+import java.awt.Dimension;
+import java.text.SimpleDateFormat;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.DateAxis;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.data.time.Day;
+import org.jfree.data.time.TimeSeriesCollection;
+import org.jfree.ui.ApplicationFrame;
+import org.jfree.ui.RefineryUtilities;
+import ta4jexamples.loaders.CsvTicksLoader;
 import ta4jexamples.loaders.CsvTradesLoader;
+
+import org.jfree.chart.renderer.xy.CandlestickRenderer;
+import org.jfree.data.xy.OHLCDataset;
+import org.jfree.data.xy.XYDataset;
+import ta4jexamples.indicators.CandlestickChart;
 
 /**
  * Quickstart for ta4j.
@@ -47,18 +70,112 @@ import ta4jexamples.loaders.CsvTradesLoader;
  * Global example.
  */
 public class Quickstart {
+    
+        /**
+     * Builds a JFreeChart time series from a Ta4j time series and an indicator.
+     * @param tickSeries the ta4j time series
+     * @param indicator the indicator
+     * @param name the name of the chart time series
+     * @return the JFreeChart time series
+     */
+    private static org.jfree.data.time.TimeSeries buildChartTimeSeries(TimeSeries tickSeries, Indicator<Decimal> indicator, String name) {
+        org.jfree.data.time.TimeSeries chartTimeSeries = new org.jfree.data.time.TimeSeries(name);
+        for (int i = 0; i < tickSeries.getTickCount(); i++) {
+            Tick tick = tickSeries.getTick(i);
+            chartTimeSeries.addOrUpdate(new Day(tick.getEndTime().toDate()), indicator.getValue(i).toDouble());
+        }
+        return chartTimeSeries;
+    }
+
+    /**
+     * Displays a chart in a frame.
+     * @param chart the chart to be displayed
+     */
+    private static void displayChart(JFreeChart chart) {
+        // Chart panel
+        ChartPanel panel = new ChartPanel(chart);
+        panel.setFillZoomRectangle(true);
+        panel.setMouseWheelEnabled(true);
+        panel.setPreferredSize(new java.awt.Dimension(500, 270));
+        // Application frame
+        ApplicationFrame frame = new ApplicationFrame("Ta4j example - Indicators to chart");
+        frame.setContentPane(panel);
+        frame.pack();
+        RefineryUtilities.centerFrameOnScreen(frame);
+        frame.setVisible(true);
+    }
 
     public static void main(String[] args) {
 
         // Getting a time series (from any provider: CSV, web service, etc.)
-        TimeSeries series = CsvTradesLoader.loadBitstampSeries();
+        //TimeSeries series = CsvTradesLoader.loadBitstampSeries();
+        //TimeSeries series = CsvTicksLoader.loadAppleIncSeries();
+        TimeSeries series = CsvTicksLoader.loadMT4Series("EURUSD60_1.csv");
+        
+        ////////////////////////CONSTRUIR GRÁFICO/////////////////////////////
+        /**
+         * Creating indicators
+         */
+        // Close price
+        ClosePriceIndicator closePrice = new ClosePriceIndicator(series);
+        // Bollinger bands
+        BollingerBandsMiddleIndicator middleBBand = new BollingerBandsMiddleIndicator(closePrice);
+        BollingerBandsLowerIndicator lowBBand = new BollingerBandsLowerIndicator(middleBBand, closePrice);
+        BollingerBandsUpperIndicator upBBand = new BollingerBandsUpperIndicator(middleBBand, closePrice);
+        
+        
 
+        /**
+         * Building chart dataset
+         */
+        TimeSeriesCollection dataset = new TimeSeriesCollection();
+        //OHLCDataset dataset2 = CandlestickChart.createOHLCDataset(series);
+        
+        dataset.addSeries(buildChartTimeSeries(series, closePrice, "Apple Inc. (AAPL) - NASDAQ GS"));
+        dataset.addSeries(buildChartTimeSeries(series, lowBBand, "Low Bollinger Band"));
+        dataset.addSeries(buildChartTimeSeries(series, upBBand, "High Bollinger Band"));
+        
+                /**
+         * Creating the chart
+         */
+        /*
+        JFreeChart chart = ChartFactory.createTimeSeriesChart(
+                "Apple Inc. 2013 Close Prices", // title
+                "Date", // x-axis label
+                "Price Per Unit", // y-axis label
+                dataset, // data
+                true, // create legend?
+                true, // generate tooltips?
+                false // generate URLs?
+                );
+        */
+        //XYPlot plot = (XYPlot) chart.getPlot();
+        
+        DateAxis    domainAxis       = new DateAxis("Date");
+        NumberAxis  rangeAxis        = new NumberAxis("Price");
+        CandlestickRenderer renderer = new CandlestickRenderer();
+        //XYDataset   dataset          = getDataSet(stockSymbol);
+        
+        XYPlot plot = new XYPlot(dataset, domainAxis, rangeAxis, renderer);
+        
+        JFreeChart chart = new JFreeChart("Test", null, plot, false);
+        ChartPanel chartPanel = new ChartPanel(chart, false);
+        chartPanel.setPreferredSize(new Dimension(600, 300));
+        
+        DateAxis axis = (DateAxis) plot.getDomainAxis();
+        axis.setDateFormatOverride(new SimpleDateFormat("yyyy-MM-dd"));
 
+        /**
+         * Displaying the chart
+         */
+        displayChart(chart);
+        //////////////////////////////////////////////////////////////////////
+        
         // Getting the close price of the ticks
         Decimal firstClosePrice = series.getTick(0).getClosePrice();
         System.out.println("First close price: " + firstClosePrice.toDouble());
         // Or within an indicator:
-        ClosePriceIndicator closePrice = new ClosePriceIndicator(series);
+        //ClosePriceIndicator closePrice = new ClosePriceIndicator(series);
         // Here is the same close price:
         System.out.println(firstClosePrice.isEqual(closePrice.getValue(0))); // equal to firstClosePrice
 

@@ -26,6 +26,15 @@ import eu.verdelhan.ta4j.Tick;
 import eu.verdelhan.ta4j.TimeSeries;
 import eu.verdelhan.ta4j.indicators.simple.ClosePriceIndicator;
 import java.awt.Color;
+import java.awt.Paint;
+import java.awt.PaintContext;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.ScrollPane;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.ColorModel;
 import java.util.Date;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -42,6 +51,7 @@ import org.jfree.data.xy.OHLCDataset;
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RefineryUtilities;
 import org.joda.time.Period;
+import ta4jexamples.loaders.CsvTicksLoader;
 import ta4jexamples.loaders.CsvTradesLoader;
 
 /**
@@ -101,14 +111,20 @@ public class CandlestickChart {
      * @param chart the chart to be displayed
      */
     private static void displayChart(JFreeChart chart) {
-        // Chart panel
+        // Scroll panel
+        //ScrollPane sPanel= new ScrollPane();
+        // Chart panel        
         ChartPanel panel = new ChartPanel(chart);
         panel.setFillZoomRectangle(true);
         panel.setMouseWheelEnabled(true);
         panel.setPreferredSize(new java.awt.Dimension(740, 300));
+        
+        //sPanel.add(panel);
+        
         // Application frame
         ApplicationFrame frame = new ApplicationFrame("Ta4j example - Candlestick chart");
         frame.setContentPane(panel);
+        //frame.setContentPane(sPanel);
         frame.pack();
         RefineryUtilities.centerFrameOnScreen(frame);
         frame.setVisible(true);
@@ -118,7 +134,9 @@ public class CandlestickChart {
         /**
          * Getting time series
          */
-        TimeSeries series = CsvTradesLoader.loadBitstampSeries().subseries(0, Period.hours(6));
+        //TimeSeries series = CsvTradesLoader.loadBitstampSeries().subseries(0, Period.hours(12));
+        
+        TimeSeries series = CsvTicksLoader.loadMT4Series("EURUSD60_29-07-2015_04-11-2015.csv");//.subseries(0, Period.hours(1290));
         
         /**
          * Creating the OHLC dataset
@@ -142,7 +160,13 @@ public class CandlestickChart {
         // Candlestick rendering
         CandlestickRenderer renderer = new CandlestickRenderer();
         renderer.setAutoWidthMethod(CandlestickRenderer.WIDTHMETHOD_SMALLEST);
+        renderer.setUpPaint(new Color(0x3399FF));        
+        renderer.setDownPaint(new Color(0xFF3333));        
+        renderer.setDrawVolume(false);
+        renderer.setSeriesPaint(0, new Color(0xC0C0C0));           
         XYPlot plot = chart.getXYPlot();
+        plot.setDomainGridlinesVisible(true);
+        plot.setDomainGridlinePaint(new Color(0xCCCCFF));
         plot.setRenderer(renderer);
         // Additional dataset
         int index = 1;

@@ -42,12 +42,14 @@ import org.joda.time.DateTime;
  */
 public class CsvTicksLoader {
 
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+    private static SimpleDateFormat DATE_FORMAT;
 
     /**
      * @return a time series from Apple Inc. ticks.
      */
     public static TimeSeries loadAppleIncSeries() {
+        
+        DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
         InputStream stream = CsvTicksLoader.class.getClassLoader().getResourceAsStream("appleinc_ticks_from_20130101_usd.csv");
 
@@ -63,6 +65,38 @@ public class CsvTicksLoader {
                 double low = Double.parseDouble(line[3]);
                 double close = Double.parseDouble(line[4]);
                 double volume = Double.parseDouble(line[5]);
+
+                ticks.add(new Tick(date, open, high, low, close, volume));
+            }
+        } catch (IOException ioe) {
+            Logger.getLogger(CsvTicksLoader.class.getName()).log(Level.SEVERE, "Unable to load ticks from CSV", ioe);
+        } catch (ParseException pe) {
+            Logger.getLogger(CsvTicksLoader.class.getName()).log(Level.SEVERE, "Error while parsing date", pe);
+        } catch (NumberFormatException nfe) {
+            Logger.getLogger(CsvTicksLoader.class.getName()).log(Level.SEVERE, "Error while parsing value", nfe);
+        }
+
+        return new TimeSeries("apple_ticks", ticks);
+    }
+    
+    public static TimeSeries loadMT4Series(String fileName) {
+        
+        DATE_FORMAT = new SimpleDateFormat("yyyy.MM.dd HH:mm");
+
+        InputStream stream = CsvTicksLoader.class.getClassLoader().getResourceAsStream(fileName);
+
+        List<Tick> ticks = new ArrayList<Tick>();
+
+        CSVReader csvReader = new CSVReader(new InputStreamReader(stream, Charset.forName("UTF-8")), ',', '"', 0);
+        try {
+            String[] line;
+            while ((line = csvReader.readNext()) != null) {
+                DateTime date = new DateTime(DATE_FORMAT.parse(line[0]+" "+line[1]));
+                double open = Double.parseDouble(line[2]);
+                double high = Double.parseDouble(line[3]);
+                double low = Double.parseDouble(line[4]);
+                double close = Double.parseDouble(line[5]);
+                double volume = Double.parseDouble(line[6]);
 
                 ticks.add(new Tick(date, open, high, low, close, volume));
             }
