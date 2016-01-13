@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2015 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2016 Marc de Verdelhan & respective authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -20,38 +20,44 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package eu.verdelhan.ta4j.indicators.trackers.bollingerbands;
+package eu.verdelhan.ta4j.indicators.candles;
 
-import eu.verdelhan.ta4j.Indicator;
 import eu.verdelhan.ta4j.Decimal;
+import eu.verdelhan.ta4j.Tick;
+import eu.verdelhan.ta4j.TimeSeries;
 import eu.verdelhan.ta4j.indicators.CachedIndicator;
 
 /**
- * Buy - Occurs when the price line cross from down to up de Bollinger Band Low.
- * Sell - Occurs when the price line cross from up to down de Bollinger Band
- * High.
- * 
+ * Upper shadow height indicator.
+ * <p>
+ * Provides the (absolute) difference between the max price and the highest price of the candle body.
+ * I.e.: max price - max(open price, close price)
+ * @see http://stockcharts.com/school/doku.php?id=chart_school:chart_analysis:introduction_to_candlesticks#formation
  */
-public class BollingerBandsLowerIndicator extends CachedIndicator<Decimal> {
+public class UpperShadowIndicator extends CachedIndicator<Decimal> {
 
-    private final Indicator<Decimal> indicator;
+    private final TimeSeries series;
 
-    private final BollingerBandsMiddleIndicator bbm;
-
-    public BollingerBandsLowerIndicator(BollingerBandsMiddleIndicator bbm, Indicator<Decimal> indicator) {
-        // TODO: check for same series between indicators
-        super(indicator);
-        this.bbm = bbm;
-        this.indicator = indicator;
+    /**
+     * Constructor.
+     * @param series a time series
+     */
+    public UpperShadowIndicator(TimeSeries series) {
+        super(series);
+        this.series = series;
     }
 
     @Override
     protected Decimal calculate(int index) {
-        return bbm.getValue(index).minus(indicator.getValue(index).multipliedBy(Decimal.TWO));
-    }
-
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "deviation: " + indicator + "series: " + bbm;
+        Tick t = series.getTick(index);
+        final Decimal openPrice = t.getOpenPrice();
+        final Decimal closePrice = t.getClosePrice();
+        if (closePrice.isGreaterThan(openPrice)) {
+            // Bullish
+            return t.getMaxPrice().minus(closePrice);
+        } else {
+            // Bearish
+            return t.getMaxPrice().minus(openPrice);
+        }
     }
 }

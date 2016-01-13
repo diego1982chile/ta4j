@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2015 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2016 Marc de Verdelhan & respective authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -20,34 +20,31 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package eu.verdelhan.ta4j.indicators.trackers.bollingerbands;
+package eu.verdelhan.ta4j.indicators.trackers.bollinger;
 
-import eu.verdelhan.ta4j.Indicator;
-import eu.verdelhan.ta4j.Decimal;
-import eu.verdelhan.ta4j.indicators.CachedIndicator;
+import eu.verdelhan.ta4j.TimeSeries;
+import eu.verdelhan.ta4j.indicators.simple.ClosePriceIndicator;
+import eu.verdelhan.ta4j.indicators.trackers.SMAIndicator;
+import eu.verdelhan.ta4j.mocks.MockTimeSeries;
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
 
-/**
- * Buy - Occurs when the price line cross from down to up de Bollinger Band Low.
- * Sell - Occurs when the price line cross from up to down de Bollinger Band
- * High.
- * 
- */
-public class BollingerBandsMiddleIndicator extends CachedIndicator<Decimal> {
+public class BollingerBandsMiddleIndicatorTest {
+    private TimeSeries data;
 
-    private final Indicator<Decimal> indicator;
-
-    public BollingerBandsMiddleIndicator(Indicator<Decimal> indicator) {
-        super(indicator);
-        this.indicator = indicator;
+    @Before
+    public void setUp() {
+        data = new MockTimeSeries(1, 2, 3, 4, 3, 4, 5, 4, 3, 3, 4, 3, 2);
     }
 
-    @Override
-    protected Decimal calculate(int index) {
-        return indicator.getValue(index);
-    }
+    @Test
+    public void bollingerBandsMiddleUsingSMA() {
+        SMAIndicator sma = new SMAIndicator(new ClosePriceIndicator(data), 3);
+        BollingerBandsMiddleIndicator bbmSMA = new BollingerBandsMiddleIndicator(sma);
 
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + " deviation: " + indicator;
+        for (int i = 0; i < data.getTickCount(); i++) {
+            assertEquals(sma.getValue(i), bbmSMA.getValue(i));
+        }
     }
 }

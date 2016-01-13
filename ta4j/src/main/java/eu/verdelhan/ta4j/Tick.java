@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2015 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2016 Marc de Verdelhan & respective authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -264,6 +264,20 @@ public class Tick {
                 && timestamp.isBefore(endTime);
     }
 
+    /**
+     * @return true if this is a bearish tick, false otherwise
+     */
+    public boolean isBearish() {
+        return (openPrice != null) && (closePrice != null) && closePrice.isLessThan(openPrice);
+    }
+
+    /**
+     * @return true if this is a bullish tick, false otherwise
+     */
+    public boolean isBullish() {
+        return (openPrice != null) && (closePrice != null) && openPrice.isLessThan(closePrice);
+    }
+    
     /**
      * @return a human-friendly string of the end timestamp
      */

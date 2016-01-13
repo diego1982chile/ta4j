@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2015 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2016 Marc de Verdelhan & respective authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -20,31 +20,47 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package eu.verdelhan.ta4j.indicators.trackers.bollingerbands;
+package eu.verdelhan.ta4j.indicators.trackers;
 
+import static eu.verdelhan.ta4j.TATestsUtils.assertDecimalEquals;
 import eu.verdelhan.ta4j.TimeSeries;
 import eu.verdelhan.ta4j.indicators.simple.ClosePriceIndicator;
-import eu.verdelhan.ta4j.indicators.trackers.SMAIndicator;
 import eu.verdelhan.ta4j.mocks.MockTimeSeries;
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
-public class BollingerBandsMiddleIndicatorTest {
+public class HMAIndicatorTest {
+
     private TimeSeries data;
 
     @Before
     public void setUp() {
-        data = new MockTimeSeries(1, 2, 3, 4, 3, 4, 5, 4, 3, 3, 4, 3, 2);
+        data = new MockTimeSeries(
+                84.53, 87.39, 84.55,
+                82.83, 82.58, 83.74,
+                83.33, 84.57, 86.98,
+                87.10, 83.11, 83.60,
+                83.66, 82.76, 79.22,
+                79.03, 78.18, 77.42,
+                74.65, 77.48, 76.87
+        );
     }
 
     @Test
-    public void bollingerBandsMiddleUsingSMA() {
-        SMAIndicator sma = new SMAIndicator(new ClosePriceIndicator(data), 3);
-        BollingerBandsMiddleIndicator bbmSMA = new BollingerBandsMiddleIndicator(sma);
-
-        for (int i = 0; i < data.getTickCount(); i++) {
-            assertEquals(sma.getValue(i), bbmSMA.getValue(i));
-        }
+    public void hmaUsingTimeFrame9UsingClosePrice() {
+        // Example from http://traders.com/Documentation/FEEDbk_docs/2010/12/TradingIndexesWithHullMA.xls
+        HMAIndicator hma = new HMAIndicator(new ClosePriceIndicator(data), 9);
+        assertDecimalEquals(hma.getValue(10), 86.3204);
+        assertDecimalEquals(hma.getValue(11), 85.3705);
+        assertDecimalEquals(hma.getValue(12), 84.1044);
+        assertDecimalEquals(hma.getValue(13), 83.0197);
+        assertDecimalEquals(hma.getValue(14), 81.3913);
+        assertDecimalEquals(hma.getValue(15), 79.6511);
+        assertDecimalEquals(hma.getValue(16), 78.0443);
+        assertDecimalEquals(hma.getValue(17), 76.8832);
+        assertDecimalEquals(hma.getValue(18), 75.5363);
+        assertDecimalEquals(hma.getValue(19), 75.1713);
+        assertDecimalEquals(hma.getValue(20), 75.3597);
     }
+
 }

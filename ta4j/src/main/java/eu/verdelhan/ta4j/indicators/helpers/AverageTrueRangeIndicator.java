@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2015 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2016 Marc de Verdelhan & respective authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -48,7 +48,7 @@ public class AverageTrueRangeIndicator extends CachedIndicator<Decimal> {
         }
         Decimal nbPeriods = Decimal.valueOf(timeFrame);
         Decimal nbPeriodsMinusOne = Decimal.valueOf(timeFrame - 1);
-        return getValue(index - 1).multipliedBy(nbPeriodsMinusOne).dividedBy(nbPeriods).plus(tr.getValue(index).dividedBy(nbPeriods));
+        return getValue(index - 1).multipliedBy(nbPeriodsMinusOne).plus(tr.getValue(index)).dividedBy(nbPeriods);
     }
 
     @Override

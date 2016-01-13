@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2015 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2016 Marc de Verdelhan & respective authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -20,38 +20,39 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package eu.verdelhan.ta4j.indicators.trackers.bollingerbands;
+package eu.verdelhan.ta4j.indicators.simple;
 
 import eu.verdelhan.ta4j.Indicator;
 import eu.verdelhan.ta4j.Decimal;
 import eu.verdelhan.ta4j.indicators.CachedIndicator;
 
 /**
- * Buy - Occurs when the price line cross from down to up de Bollinger Band Low.
- * Sell - Occurs when the price line cross from up to down de Bollinger Band
- * High.
- * 
+ * Sum indicator.
+ * <p>
+ * I.e.: operand0 + operand1 + ... + operandN
  */
-public class BollingerBandsUpperIndicator extends CachedIndicator<Decimal> {
+public class SumIndicator extends CachedIndicator<Decimal> {
 
-    private final Indicator<Decimal> indicator;
-
-    private final BollingerBandsMiddleIndicator bbm;
-
-    public BollingerBandsUpperIndicator(BollingerBandsMiddleIndicator bbm, Indicator<Decimal> indicator) {
-        // TODO: check for same series between indicators
-        super(indicator);
-        this.bbm = bbm;
-        this.indicator = indicator;
+    private Indicator<Decimal>[] operands;
+    
+    /**
+     * Constructor.
+     * (operand0 plus operand1 plus ... plus operandN)
+     * @param operands the operand indicators for the sum
+     */
+    public SumIndicator(Indicator<Decimal>... operands) {
+        // TODO: check if first series is equal to the other ones
+        super(operands[0]);
+        this.operands = new Indicator[operands.length];
+        System.arraycopy(operands, 0, this.operands, 0, operands.length);
     }
 
     @Override
     protected Decimal calculate(int index) {
-        return bbm.getValue(index).plus(indicator.getValue(index).multipliedBy(Decimal.TWO));
-    }
-
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "deviation: " + indicator + "series" + bbm;
+        Decimal sum = Decimal.ZERO;
+        for (int i = 0; i < operands.length; i++) {
+            sum = sum.plus(operands[i].getValue(index));
+        }
+        return sum;
     }
 }

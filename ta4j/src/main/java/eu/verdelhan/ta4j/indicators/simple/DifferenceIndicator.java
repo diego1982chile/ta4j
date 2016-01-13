@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2015 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2016 Marc de Verdelhan & respective authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -29,6 +29,7 @@ import eu.verdelhan.ta4j.indicators.CachedIndicator;
 /**
  * Difference indicator.
  * <p>
+ * I.e.: first - second
  */
 public class DifferenceIndicator extends CachedIndicator<Decimal> {
 
@@ -36,6 +37,12 @@ public class DifferenceIndicator extends CachedIndicator<Decimal> {
     
     private Indicator<Decimal> second;
     
+    /**
+     * Constructor.
+     * (first minus second)
+     * @param first the first indicator
+     * @param second the second indicator
+     */
     public DifferenceIndicator(Indicator<Decimal> first, Indicator<Decimal> second) {
         // TODO: check if first series is equal to second one
         super(first);
