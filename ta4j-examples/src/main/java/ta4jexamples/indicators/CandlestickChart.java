@@ -136,8 +136,9 @@ public class CandlestickChart {
          */
         //TimeSeries series = CsvTradesLoader.loadBitstampSeries().subseries(0, Period.hours(12));
         
-        TimeSeries series = CsvTicksLoader.loadMT4Series("EURUSD60_29-07-2015_04-11-2015.csv");//.subseries(0, Period.hours(1290));
-        
+        //TimeSeries series = CsvTicksLoader.loadMT4Series("EURUSD_UTC_Hourly_Bid_2015.01.01_2016.01.13.csv");//.subseries(0, Period.hours(1290));
+        //TimeSeries series = CsvTicksLoader.loadJForexSeries("EURUSD_UTC_Hourly_Bid_2015.01.01_2016.01.13.csv");//.subseries(0, Period.hours(1290));
+        TimeSeries series = CsvTicksLoader.loadMT4Series("EURUSD_diario_ejemplo1.csv");
         /**
          * Creating the OHLC dataset
          */

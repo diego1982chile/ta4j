@@ -16,6 +16,7 @@
             <groupId>eu.verdelhan</groupId>
             <artifactId>ta4j</artifactId>
             <version>0.8-SNAPSHOT</version>
+            <type>jar</type>
         </dependency>
 
         <dependency>

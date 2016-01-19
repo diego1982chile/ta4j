@@ -26,6 +26,7 @@ import eu.verdelhan.ta4j.AnalysisCriterion;
 import eu.verdelhan.ta4j.Strategy;
 import eu.verdelhan.ta4j.Decimal;
 import eu.verdelhan.ta4j.Indicator;
+import eu.verdelhan.ta4j.Order;
 import eu.verdelhan.ta4j.Rule;
 import eu.verdelhan.ta4j.Tick;
 import eu.verdelhan.ta4j.TimeSeries;
@@ -36,21 +37,27 @@ import eu.verdelhan.ta4j.analysis.criteria.RewardRiskRatioCriterion;
 import eu.verdelhan.ta4j.analysis.criteria.TotalProfitCriterion;
 import eu.verdelhan.ta4j.analysis.criteria.VersusBuyAndHoldCriterion;
 import eu.verdelhan.ta4j.indicators.simple.ClosePriceIndicator;
+import eu.verdelhan.ta4j.indicators.trackers.AccelerationDecelerationIndicator;
+import eu.verdelhan.ta4j.indicators.trackers.EMAIndicator;
+import eu.verdelhan.ta4j.indicators.trackers.MACDIndicator;
 import eu.verdelhan.ta4j.indicators.trackers.SMAIndicator;
-import eu.verdelhan.ta4j.indicators.trackers.bollingerbands.BollingerBandsLowerIndicator;
-import eu.verdelhan.ta4j.indicators.trackers.bollingerbands.BollingerBandsMiddleIndicator;
-import eu.verdelhan.ta4j.indicators.trackers.bollingerbands.BollingerBandsUpperIndicator;
+import eu.verdelhan.ta4j.indicators.trackers.bollinger.BollingerBandsLowerIndicator;
+import eu.verdelhan.ta4j.indicators.trackers.bollinger.BollingerBandsMiddleIndicator;
+import eu.verdelhan.ta4j.indicators.trackers.bollinger.BollingerBandsUpperIndicator;
 import eu.verdelhan.ta4j.trading.rules.CrossedDownIndicatorRule;
 import eu.verdelhan.ta4j.trading.rules.CrossedUpIndicatorRule;
 import eu.verdelhan.ta4j.trading.rules.StopGainRule;
 import eu.verdelhan.ta4j.trading.rules.StopLossRule;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.DatasetRenderingOrder;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.time.Day;
 import org.jfree.data.time.TimeSeriesCollection;
@@ -60,6 +67,9 @@ import ta4jexamples.loaders.CsvTicksLoader;
 import ta4jexamples.loaders.CsvTradesLoader;
 
 import org.jfree.chart.renderer.xy.CandlestickRenderer;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.time.Second;
+import org.jfree.data.xy.DefaultHighLowDataset;
 import org.jfree.data.xy.OHLCDataset;
 import org.jfree.data.xy.XYDataset;
 import ta4jexamples.indicators.CandlestickChart;
@@ -87,95 +97,21 @@ public class Quickstart {
         return chartTimeSeries;
     }
 
-    /**
-     * Displays a chart in a frame.
-     * @param chart the chart to be displayed
-     */
-    private static void displayChart(JFreeChart chart) {
-        // Chart panel
-        ChartPanel panel = new ChartPanel(chart);
-        panel.setFillZoomRectangle(true);
-        panel.setMouseWheelEnabled(true);
-        panel.setPreferredSize(new java.awt.Dimension(500, 270));
-        // Application frame
-        ApplicationFrame frame = new ApplicationFrame("Ta4j example - Indicators to chart");
-        frame.setContentPane(panel);
-        frame.pack();
-        RefineryUtilities.centerFrameOnScreen(frame);
-        frame.setVisible(true);
-    }
-
     public static void main(String[] args) {
 
         // Getting a time series (from any provider: CSV, web service, etc.)
         //TimeSeries series = CsvTradesLoader.loadBitstampSeries();
         //TimeSeries series = CsvTicksLoader.loadAppleIncSeries();
-        TimeSeries series = CsvTicksLoader.loadMT4Series("EURUSD60_1.csv");
+        TimeSeries series = CsvTicksLoader.loadMT4Series("EURUSD_diario_ejemplo1.csv");
+        //TimeSeries series = CsvTicksLoader.loadJForexSeries("EURUSD_UTC_Hourly_Bid_2015.01.01_2016.01.13.csv");
         
-        ////////////////////////CONSTRUIR GRÁFICO/////////////////////////////
-        /**
-         * Creating indicators
-         */
-        // Close price
-        ClosePriceIndicator closePrice = new ClosePriceIndicator(series);
-        // Bollinger bands
-        BollingerBandsMiddleIndicator middleBBand = new BollingerBandsMiddleIndicator(closePrice);
-        BollingerBandsLowerIndicator lowBBand = new BollingerBandsLowerIndicator(middleBBand, closePrice);
-        BollingerBandsUpperIndicator upBBand = new BollingerBandsUpperIndicator(middleBBand, closePrice);
-        
-        
+        buildCandleStickChart(series);
 
-        /**
-         * Building chart dataset
-         */
-        TimeSeriesCollection dataset = new TimeSeriesCollection();
-        //OHLCDataset dataset2 = CandlestickChart.createOHLCDataset(series);
-        
-        dataset.addSeries(buildChartTimeSeries(series, closePrice, "Apple Inc. (AAPL) - NASDAQ GS"));
-        dataset.addSeries(buildChartTimeSeries(series, lowBBand, "Low Bollinger Band"));
-        dataset.addSeries(buildChartTimeSeries(series, upBBand, "High Bollinger Band"));
-        
-                /**
-         * Creating the chart
-         */
-        /*
-        JFreeChart chart = ChartFactory.createTimeSeriesChart(
-                "Apple Inc. 2013 Close Prices", // title
-                "Date", // x-axis label
-                "Price Per Unit", // y-axis label
-                dataset, // data
-                true, // create legend?
-                true, // generate tooltips?
-                false // generate URLs?
-                );
-        */
-        //XYPlot plot = (XYPlot) chart.getPlot();
-        
-        DateAxis    domainAxis       = new DateAxis("Date");
-        NumberAxis  rangeAxis        = new NumberAxis("Price");
-        CandlestickRenderer renderer = new CandlestickRenderer();
-        //XYDataset   dataset          = getDataSet(stockSymbol);
-        
-        XYPlot plot = new XYPlot(dataset, domainAxis, rangeAxis, renderer);
-        
-        JFreeChart chart = new JFreeChart("Test", null, plot, false);
-        ChartPanel chartPanel = new ChartPanel(chart, false);
-        chartPanel.setPreferredSize(new Dimension(600, 300));
-        
-        DateAxis axis = (DateAxis) plot.getDomainAxis();
-        axis.setDateFormatOverride(new SimpleDateFormat("yyyy-MM-dd"));
-
-        /**
-         * Displaying the chart
-         */
-        displayChart(chart);
-        //////////////////////////////////////////////////////////////////////
-        
         // Getting the close price of the ticks
-        Decimal firstClosePrice = series.getTick(0).getClosePrice();
+        Decimal firstClosePrice = series.getTick(0).getClosePrice();        
         System.out.println("First close price: " + firstClosePrice.toDouble());
         // Or within an indicator:
-        //ClosePriceIndicator closePrice = new ClosePriceIndicator(series);
+        ClosePriceIndicator closePrice = new ClosePriceIndicator(series);
         // Here is the same close price:
         System.out.println(firstClosePrice.isEqual(closePrice.getValue(0))); // equal to firstClosePrice
 
@@ -187,7 +123,27 @@ public class Quickstart {
         // Getting a longer SMA (e.g. over the 30 last ticks)
         SMAIndicator longSma = new SMAIndicator(closePrice, 30);
 
-
+        AccelerationDecelerationIndicator ac = new AccelerationDecelerationIndicator(series);
+        
+        
+        MACDIndicator macd= new MACDIndicator(closePrice,12,26);
+        EMAIndicator ema= new EMAIndicator(closePrice,9);
+        
+        Rule entryRule1 = new CrossedUpIndicatorRule(macd,ema);                
+        Rule exitRule1 = new CrossedDownIndicatorRule(macd,ema);
+        
+        Strategy strategy1 = new Strategy(entryRule1, exitRule1);                       
+        
+        TradingRecord tradingRecord1 = series.run(strategy1, Order.OrderType.BUY);
+        
+        Rule entryRule2 = new CrossedUpIndicatorRule(ema,macd);                
+        Rule exitRule2 = new CrossedDownIndicatorRule(ema,macd);
+        
+        Strategy strategy2 = new Strategy(entryRule2, exitRule2);                       
+        
+        TradingRecord tradingRecord2 = series.run(strategy2, Order.OrderType.SELL);        
+        
+        //DirectionalMovementIndicator
         // Ok, now let's building our trading rules!
 
         // Buying rules
@@ -200,34 +156,164 @@ public class Quickstart {
         // Selling rules
         // We want to sell:
         //  - if the 5-ticks SMA crosses under 30-ticks SMA
-        //  - or if if the price looses more than 3%
+        //  - or if the price looses more than 3%
         //  - or if the price earns more than 2%
         Rule sellingRule = new CrossedDownIndicatorRule(shortSma, longSma)
                 .or(new StopLossRule(closePrice, Decimal.valueOf("3")))
                 .or(new StopGainRule(closePrice, Decimal.valueOf("2")));
         
+        //Strategy strategy = new Strategy(buyingRule, sellingRule);       
+                        
         // Running our juicy trading strategy...
-        TradingRecord tradingRecord = series.run(new Strategy(buyingRule, sellingRule));
-        System.out.println("Number of trades for our strategy: " + tradingRecord.getTradeCount());
-
+        //TradingRecord tradingRecord = series.run(strategy);
+        System.out.println("Number of trades for our strategy: " + tradingRecord2.getTradeCount());
+        
+        for(int i=0;i<tradingRecord2.getTradeCount();++i){            
+            Order order=tradingRecord2.getTrades().get(i).getEntry();
+            System.out.println("ShouldOperate["+i+"]="+strategy1.shouldOperate(i, tradingRecord2));
+            System.out.println("Order["+i+"]="+order.toString());                        
+        }
 
         // Analysis
 
         // Getting the cash flow of the resulting trades
-        CashFlow cashFlow = new CashFlow(series, tradingRecord);
+        CashFlow cashFlow = new CashFlow(series, tradingRecord2);
 
         // Getting the profitable trades ratio
         AnalysisCriterion profitTradesRatio = new AverageProfitableTradesCriterion();
-        System.out.println("Profitable trades ratio: " + profitTradesRatio.calculate(series, tradingRecord));
+        System.out.println("Profitable trades ratio: " + profitTradesRatio.calculate(series, tradingRecord2));
         // Getting the reward-risk ratio
         AnalysisCriterion rewardRiskRatio = new RewardRiskRatioCriterion();
-        System.out.println("Reward-risk ratio: " + rewardRiskRatio.calculate(series, tradingRecord));
+        System.out.println("Reward-risk ratio: " + rewardRiskRatio.calculate(series, tradingRecord2));
 
         // Total profit of our strategy
         // vs total profit of a buy-and-hold strategy
         AnalysisCriterion vsBuyAndHold = new VersusBuyAndHoldCriterion(new TotalProfitCriterion());
-        System.out.println("Our profit vs buy-and-hold profit: " + vsBuyAndHold.calculate(series, tradingRecord));
+        System.out.println("Our profit vs buy-and-hold profit: " + vsBuyAndHold.calculate(series, tradingRecord2));
 
-        // Your turn!
+        // Your turn!    
+    }
+    
+   private static void buildCandleStickChart(TimeSeries series){
+       /**
+         * Creating the OHLC dataset
+         */
+        OHLCDataset ohlcDataset = createOHLCDataset(series);
+        
+        /**
+         * Creating the additional dataset
+         */
+        TimeSeriesCollection xyDataset = createAdditionalDataset(series);
+        
+        /**
+         * Creating the chart
+         */
+        JFreeChart chart = ChartFactory.createCandlestickChart(
+                "Bitstamp BTC price",
+                "Time",
+                "USD",
+                ohlcDataset,
+                true);
+        // Candlestick rendering
+        CandlestickRenderer renderer = new CandlestickRenderer();
+        renderer.setAutoWidthMethod(CandlestickRenderer.WIDTHMETHOD_SMALLEST);
+        renderer.setUpPaint(new Color(0x3399FF));        
+        renderer.setDownPaint(new Color(0xFF3333));        
+        renderer.setDrawVolume(false);
+        renderer.setSeriesPaint(0, new Color(0xC0C0C0));           
+        XYPlot plot = chart.getXYPlot();
+        plot.setDomainGridlinesVisible(true);
+        plot.setDomainGridlinePaint(new Color(0xCCCCFF));
+        plot.setRenderer(renderer);
+        // Additional dataset
+        int index = 1;
+        plot.setDataset(index, xyDataset);
+        plot.mapDatasetToRangeAxis(index, 0);
+        XYLineAndShapeRenderer renderer2 = new XYLineAndShapeRenderer(true, false);
+        renderer2.setSeriesPaint(index, Color.blue);
+        plot.setRenderer(index, renderer2);
+        // Misc
+        plot.setRangeGridlinePaint(Color.lightGray);
+        plot.setBackgroundPaint(Color.white);
+        NumberAxis numberAxis = (NumberAxis) plot.getRangeAxis();
+        numberAxis.setAutoRangeIncludesZero(false);
+        plot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
+        
+        /**
+         * Displaying the chart
+         */
+        displayChart(chart);
+    }
+   
+   
+   /**
+     * Builds a JFreeChart OHLC dataset from a ta4j time series.
+     * @param series a time series
+     * @return an Open-High-Low-Close dataset
+     */
+    private static OHLCDataset createOHLCDataset(TimeSeries series) {
+        final int nbTicks = series.getTickCount();
+        
+        Date[] dates = new Date[nbTicks];
+        double[] opens = new double[nbTicks];
+        double[] highs = new double[nbTicks];
+        double[] lows = new double[nbTicks];
+        double[] closes = new double[nbTicks];
+        double[] volumes = new double[nbTicks];
+        
+        for (int i = 0; i < nbTicks; i++) {
+            Tick tick = series.getTick(i);
+            dates[i] = tick.getEndTime().toDate();
+            opens[i] = tick.getOpenPrice().toDouble();
+            highs[i] = tick.getMaxPrice().toDouble();
+            lows[i] = tick.getMinPrice().toDouble();
+            closes[i] = tick.getClosePrice().toDouble();
+            volumes[i] = tick.getVolume().toDouble();
+        }
+        
+        OHLCDataset dataset = new DefaultHighLowDataset("btc", dates, highs, lows, opens, closes, volumes);
+        
+        return dataset;
+    }
+    
+    /**
+     * Builds an additional JFreeChart dataset from a ta4j time series.
+     * @param series a time series
+     * @return an additional dataset
+     */
+    private static TimeSeriesCollection createAdditionalDataset(TimeSeries series) {
+        ClosePriceIndicator indicator = new ClosePriceIndicator(series);
+        TimeSeriesCollection dataset = new TimeSeriesCollection();
+        org.jfree.data.time.TimeSeries chartTimeSeries = new org.jfree.data.time.TimeSeries("Btc price");
+        for (int i = 0; i < series.getTickCount(); i++) {
+            Tick tick = series.getTick(i);
+            chartTimeSeries.add(new Second(tick.getEndTime().toDate()), indicator.getValue(i).toDouble());
+        }
+        dataset.addSeries(chartTimeSeries);
+        return dataset;
+    }
+
+    /**
+     * Displays a chart in a frame.
+     * @param chart the chart to be displayed
+     */
+    private static void displayChart(JFreeChart chart) {
+        // Scroll panel
+        //ScrollPane sPanel= new ScrollPane();
+        // Chart panel        
+        ChartPanel panel = new ChartPanel(chart);
+        panel.setFillZoomRectangle(true);
+        panel.setMouseWheelEnabled(true);
+        panel.setPreferredSize(new java.awt.Dimension(740, 300));
+        
+        //sPanel.add(panel);
+        
+        // Application frame
+        ApplicationFrame frame = new ApplicationFrame("Ta4j example - Candlestick chart");
+        frame.setContentPane(panel);
+        //frame.setContentPane(sPanel);
+        frame.pack();
+        RefineryUtilities.centerFrameOnScreen(frame);
+        frame.setVisible(true);
     }
 }

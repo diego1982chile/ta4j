@@ -23,6 +23,7 @@
 package ta4jexamples.strategies;
 
 import eu.verdelhan.ta4j.Decimal;
+import eu.verdelhan.ta4j.Order;
 import eu.verdelhan.ta4j.Rule;
 import eu.verdelhan.ta4j.Strategy;
 import eu.verdelhan.ta4j.TimeSeries;
@@ -86,6 +87,11 @@ public class GlobalExtremaStrategy {
         // Running the strategy
         TradingRecord tradingRecord = series.run(strategy);
         System.out.println("Number of trades for the strategy: " + tradingRecord.getTradeCount());
+        
+        for(int i=0;i<tradingRecord.getTradeCount();++i){            
+            Order order=tradingRecord.getTrades().get(i).getEntry();
+            System.out.println("Order["+i+"]="+order.toString());                        
+        }
 
         // Analysis
         System.out.println("Total profit for the strategy: " + new TotalProfitCriterion().calculate(series, tradingRecord));

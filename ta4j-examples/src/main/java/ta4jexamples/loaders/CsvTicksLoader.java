@@ -87,6 +87,7 @@ public class CsvTicksLoader {
 
         List<Tick> ticks = new ArrayList<Tick>();
 
+        //CSVReader csvReader = new CSVReader(new InputStreamReader(stream, Charset.forName("UTF-8")), ',', '"', 0);
         CSVReader csvReader = new CSVReader(new InputStreamReader(stream, Charset.forName("UTF-8")), ',', '"', 0);
         try {
             String[] line;
@@ -110,6 +111,45 @@ public class CsvTicksLoader {
 
         return new TimeSeries("apple_ticks", ticks);
     }
+    
+    public static TimeSeries loadJForexSeries(String fileName) {
+        
+        DATE_FORMAT = new SimpleDateFormat("yyyy.MM.dd HH:mm");
+
+        InputStream stream = CsvTicksLoader.class.getClassLoader().getResourceAsStream(fileName);
+
+        List<Tick> ticks = new ArrayList<Tick>();
+
+        //CSVReader csvReader = new CSVReader(new InputStreamReader(stream, Charset.forName("UTF-8")), ',', '"', 0);
+        CSVReader csvReader = new CSVReader(new InputStreamReader(stream, Charset.forName("UTF-8")), '|', '"', 0);
+        try {
+            String[] line;
+            int cont=0;
+            while ((line = csvReader.readNext()) != null) {  
+                if(cont>0){                    
+                    String[] tokens=line[0].split(" ");
+                    DateTime date = new DateTime(DATE_FORMAT.parse(tokens[0]+" "+tokens[1]));
+                    System.out.println("date="+date.toString()+" open="+Double.parseDouble(line[1])+" high="+Double.parseDouble(line[2])+" low="+Double.parseDouble(line[3])+" close="+Double.parseDouble(line[4]));
+                    double open = (double)Double.parseDouble(line[1]);
+                    double high = (double)Double.parseDouble(line[2]);
+                    double low = (double)Double.parseDouble(line[3]);
+                    double close = (double)Double.parseDouble(line[4]);
+                    double volume = (double)Double.parseDouble(line[5]);
+
+                    ticks.add(new Tick(date, open, high, low, close, volume));                    
+                }                                
+                cont++;
+            }
+        } catch (IOException ioe) {
+            Logger.getLogger(CsvTicksLoader.class.getName()).log(Level.SEVERE, "Unable to load ticks from CSV", ioe);
+        } catch (ParseException pe) {
+            Logger.getLogger(CsvTicksLoader.class.getName()).log(Level.SEVERE, "Error while parsing date", pe);
+        } catch (NumberFormatException nfe) {
+            Logger.getLogger(CsvTicksLoader.class.getName()).log(Level.SEVERE, "Error while parsing value", nfe);
+        }
+
+        return new TimeSeries("apple_ticks", ticks);
+    }    
 
     public static void main(String args[]) {
         TimeSeries series = CsvTicksLoader.loadAppleIncSeries();
