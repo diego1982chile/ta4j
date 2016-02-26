@@ -102,7 +102,7 @@ public class Quickstart {
         // Getting a time series (from any provider: CSV, web service, etc.)
         //TimeSeries series = CsvTradesLoader.loadBitstampSeries();
         //TimeSeries series = CsvTicksLoader.loadAppleIncSeries();
-        TimeSeries series = CsvTicksLoader.loadMT4Series("EURUSD_diario_ejemplo1.csv");
+        TimeSeries series = CsvTicksLoader.loadMT4Series("EURUSD_diario_ejemplo3.csv");
         //TimeSeries series = CsvTicksLoader.loadJForexSeries("EURUSD_UTC_Hourly_Bid_2015.01.01_2016.01.13.csv");
         
         buildCandleStickChart(series);
@@ -122,9 +122,6 @@ public class Quickstart {
 
         // Getting a longer SMA (e.g. over the 30 last ticks)
         SMAIndicator longSma = new SMAIndicator(closePrice, 30);
-
-        AccelerationDecelerationIndicator ac = new AccelerationDecelerationIndicator(series);
-        
         
         MACDIndicator macd= new MACDIndicator(closePrice,12,26);
         EMAIndicator ema= new EMAIndicator(closePrice,9);
@@ -134,14 +131,16 @@ public class Quickstart {
         
         Strategy strategy1 = new Strategy(entryRule1, exitRule1);                       
         
-        TradingRecord tradingRecord1 = series.run(strategy1, Order.OrderType.BUY);
+        TradingRecord tradingRecord1 = series.run(strategy1);
         
+        /*
         Rule entryRule2 = new CrossedUpIndicatorRule(ema,macd);                
         Rule exitRule2 = new CrossedDownIndicatorRule(ema,macd);
         
         Strategy strategy2 = new Strategy(entryRule2, exitRule2);                       
         
-        TradingRecord tradingRecord2 = series.run(strategy2, Order.OrderType.SELL);        
+        TradingRecord tradingRecord2 = series.run(strategy2, Order.OrderType.SELL); 
+        */
         
         //DirectionalMovementIndicator
         // Ok, now let's building our trading rules!
@@ -166,30 +165,30 @@ public class Quickstart {
                         
         // Running our juicy trading strategy...
         //TradingRecord tradingRecord = series.run(strategy);
-        System.out.println("Number of trades for our strategy: " + tradingRecord2.getTradeCount());
+        System.out.println("Number of trades for our strategy: " + tradingRecord1.getTradeCount());
         
-        for(int i=0;i<tradingRecord2.getTradeCount();++i){            
-            Order order=tradingRecord2.getTrades().get(i).getEntry();
-            System.out.println("ShouldOperate["+i+"]="+strategy1.shouldOperate(i, tradingRecord2));
+        for(int i=0;i<tradingRecord1.getTradeCount();++i){            
+            Order order=tradingRecord1.getTrades().get(i).getEntry();
+            System.out.println("ShouldOperate["+i+"]="+strategy1.shouldOperate(i, tradingRecord1));
             System.out.println("Order["+i+"]="+order.toString());                        
         }
 
         // Analysis
 
         // Getting the cash flow of the resulting trades
-        CashFlow cashFlow = new CashFlow(series, tradingRecord2);
+        CashFlow cashFlow = new CashFlow(series, tradingRecord1);
 
         // Getting the profitable trades ratio
         AnalysisCriterion profitTradesRatio = new AverageProfitableTradesCriterion();
-        System.out.println("Profitable trades ratio: " + profitTradesRatio.calculate(series, tradingRecord2));
+        System.out.println("Profitable trades ratio: " + profitTradesRatio.calculate(series, tradingRecord1));
         // Getting the reward-risk ratio
         AnalysisCriterion rewardRiskRatio = new RewardRiskRatioCriterion();
-        System.out.println("Reward-risk ratio: " + rewardRiskRatio.calculate(series, tradingRecord2));
+        System.out.println("Reward-risk ratio: " + rewardRiskRatio.calculate(series, tradingRecord1));
 
         // Total profit of our strategy
         // vs total profit of a buy-and-hold strategy
         AnalysisCriterion vsBuyAndHold = new VersusBuyAndHoldCriterion(new TotalProfitCriterion());
-        System.out.println("Our profit vs buy-and-hold profit: " + vsBuyAndHold.calculate(series, tradingRecord2));
+        System.out.println("Our profit vs buy-and-hold profit: " + vsBuyAndHold.calculate(series, tradingRecord1));
 
         // Your turn!    
     }
@@ -220,20 +219,24 @@ public class Quickstart {
         renderer.setUpPaint(new Color(0x3399FF));        
         renderer.setDownPaint(new Color(0xFF3333));        
         renderer.setDrawVolume(false);
-        renderer.setSeriesPaint(0, new Color(0xC0C0C0));           
+        renderer.setSeriesPaint(0, Color.DARK_GRAY);           
+        //renderer.setSeriesOutlinePaint(0, Color.DARK_GRAY);
         XYPlot plot = chart.getXYPlot();
         plot.setDomainGridlinesVisible(true);
-        plot.setDomainGridlinePaint(new Color(0xCCCCFF));
+        plot.setDomainMinorGridlinesVisible(true);
+        plot.setBackgroundAlpha(1);
+        //plot.setDomainGridlinePaint(new Color(0xCCCCFF));
+        plot.setDomainGridlinePaint(Color.BLACK);
         plot.setRenderer(renderer);
         // Additional dataset
         int index = 1;
         plot.setDataset(index, xyDataset);
         plot.mapDatasetToRangeAxis(index, 0);
         XYLineAndShapeRenderer renderer2 = new XYLineAndShapeRenderer(true, false);
-        renderer2.setSeriesPaint(index, Color.blue);
+        //renderer2.setSeriesPaint(index, Color.BLUE);
         plot.setRenderer(index, renderer2);
         // Misc
-        plot.setRangeGridlinePaint(Color.lightGray);
+        plot.setRangeGridlinePaint(Color.BLACK);
         plot.setBackgroundPaint(Color.white);
         NumberAxis numberAxis = (NumberAxis) plot.getRangeAxis();
         numberAxis.setAutoRangeIncludesZero(false);

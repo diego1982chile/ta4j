@@ -52,7 +52,7 @@ public class CrossedUpIndicatorRule extends AbstractRule {
      * @param first the first indicator
      * @param second the second indicator
      */
-    public CrossedUpIndicatorRule(Indicator<Decimal> first, Indicator<Decimal> second) {
+    public CrossedUpIndicatorRule(Indicator<Decimal> first, Indicator<Decimal> second) {        
         this.cross = new CrossIndicator(second, first);
     }
 
@@ -60,6 +60,7 @@ public class CrossedUpIndicatorRule extends AbstractRule {
     public boolean isSatisfied(int index, TradingRecord tradingRecord) {
         final boolean satisfied = cross.getValue(index);
         traceIsSatisfied(index, satisfied);
+        System.out.println("satisfied="+satisfied);
         return satisfied;
     }
 }

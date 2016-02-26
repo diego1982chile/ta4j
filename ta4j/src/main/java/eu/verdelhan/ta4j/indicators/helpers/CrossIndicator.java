@@ -52,8 +52,9 @@ public class CrossIndicator extends CachedIndicator<Boolean> {
 
     @Override
     protected Boolean calculate(int index) {
-
+        
         int i = index;
+        System.out.println("up.getValue("+i+")="+up.getValue(i)+" low.getValue("+i+")="+low.getValue(i));
         if (i == 0 || up.getValue(i).isGreaterThanOrEqual(low.getValue(i))) {
             return false;
         }
