@@ -48,41 +48,19 @@ public class EMAIndicator extends RecursiveCachedIndicator<Decimal> {
         this.indicator = indicator;
         this.timeFrame = timeFrame;
         multiplier = Decimal.TWO.dividedBy(Decimal.valueOf(timeFrame + 1));
-        System.out.println("multiplier="+multiplier);
     }
-    /*
+
     @Override
     protected Decimal calculate(int index) {
         if (index + 1 < timeFrame) {
             // Starting point of the EMA
             return new SMAIndicator(indicator, timeFrame).getValue(index);
-            //return Decimal.ZERO;
         }
         if (index == 0) {
             // If the timeframe is bigger than the indicator's value count
-            //return Decimal.ZERO;
             return indicator.getValue(0);
         }
         Decimal emaPrev = getValue(index - 1);
-        //System.out.println("("+indicator.getValue(index)+"-"+emaPrev+")*"+multiplier+"+"+emaPrev+"="+indicator.getValue(index).minus(emaPrev).multipliedBy(multiplier).plus(emaPrev));        
-        return indicator.getValue(index).minus(emaPrev).multipliedBy(multiplier).plus(emaPrev);        
-    }
-    */
-    @Override
-    protected Decimal calculate(int index) {
-        int startIndex = Math.max(0, index - timeFrame + 1);
-        Decimal emaValue;
-        if (startIndex == 0) {
-            // If the timeframe is bigger than the indicator's value count
-            emaValue = indicator.getValue(0);
-        } else {
-            // Starting point of the EMA
-            emaValue = this.getValue(startIndex);
-        }
-        
-        for (int i = startIndex+1; i <= index; i++) {
-            emaValue = indicator.getValue(i).minus(emaValue).multipliedBy(multiplier).plus(emaValue);
-        }
-        return emaValue;
+        return indicator.getValue(index).minus(emaPrev).multipliedBy(multiplier).plus(emaPrev);
     }
 }
