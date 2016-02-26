@@ -22,7 +22,6 @@
  */
 package eu.verdelhan.ta4j.indicators.candles;
 
-import eu.verdelhan.ta4j.Decimal;
 import eu.verdelhan.ta4j.Tick;
 import eu.verdelhan.ta4j.TimeSeries;
 import eu.verdelhan.ta4j.mocks.MockTick;

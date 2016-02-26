@@ -85,7 +85,7 @@ public final class Decimal implements Comparable<Decimal> {
     }
 
     private Decimal(BigDecimal val) {
-        this(val.toString());
+        delegate = val;
     }
 
     /**
@@ -170,6 +170,19 @@ public final class Decimal implements Comparable<Decimal> {
             return NaN;
         }
         return new Decimal(delegate.pow(n, MATH_CONTEXT));
+    }
+    
+    /**
+     * Returns the correctly rounded natural logarithm (base e) of the <code>double</code> value of this {@code Decimal}.
+     * /!\ Warning! Uses the {@code StrictMath#log(double)} method under the hood.
+     * @return the natural logarithm (base e) of {@code this}
+     * @see StrictMath#log(double)
+     */
+    public Decimal log() {
+        if (this == NaN) {
+            return NaN;
+        }
+        return new Decimal(StrictMath.log(delegate.doubleValue()));
     }
 
     /**

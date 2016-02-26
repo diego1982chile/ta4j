@@ -23,10 +23,14 @@
 package eu.verdelhan.ta4j.indicators.trackers;
 
 import static eu.verdelhan.ta4j.TATestsUtils.assertDecimalEquals;
+import eu.verdelhan.ta4j.Tick;
 import eu.verdelhan.ta4j.TimeSeries;
 import eu.verdelhan.ta4j.indicators.simple.ClosePriceIndicator;
+import eu.verdelhan.ta4j.mocks.MockTick;
 import eu.verdelhan.ta4j.mocks.MockTimeSeries;
-import static org.junit.Assert.*;
+import java.util.ArrayList;
+import java.util.List;
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -45,7 +49,7 @@ public class EMAIndicatorTest {
     }
 
     @Test
-    public void EMAUsingTimeFrame10UsingClosePrice() {
+    public void emaUsingTimeFrame10UsingClosePrice() {
         EMAIndicator ema = new EMAIndicator(new ClosePriceIndicator(data), 10);
 
         assertDecimalEquals(ema.getValue(9), 63.6536);
@@ -54,13 +58,13 @@ public class EMAIndicatorTest {
     }
 
     @Test
-    public void EMAFirstValueShouldBeEqualsToFirstDataValue() {
-        EMAIndicator ema = new EMAIndicator(new ClosePriceIndicator(data), 10);
+    public void emaFirstValueShouldBeEqualsToFirstDataValue() {
+        EMAIndicator ema = new EMAIndicator(new ClosePriceIndicator(data), 1);
         assertDecimalEquals(ema.getValue(0), "64.75");
     }
 
     @Test
-    public void valuesLessThanTimeFrameMustBeEqualsToSMAValues() {
+    public void valuesLessThanTimeFrameMustBeEqualsToSmaValues() {
         EMAIndicator ema = new EMAIndicator(new ClosePriceIndicator(data), 10);
         SMAIndicator sma = new SMAIndicator(new ClosePriceIndicator(data), 10);
 
@@ -68,11 +72,19 @@ public class EMAIndicatorTest {
             assertEquals(sma.getValue(i), ema.getValue(i));
         }
     }
-    
+
     @Test
-    public void smallTimeFrame() {
-        EMAIndicator ema = new EMAIndicator(new ClosePriceIndicator(data), 1);
-        assertDecimalEquals(ema.getValue(0), "64.75");
+    public void stackOverflowError() {
+        List<Tick> bigListOfTicks = new ArrayList<Tick>();
+        for (int i = 0; i < 10000; i++) {
+            bigListOfTicks.add(new MockTick(i));
+        }
+        MockTimeSeries bigSeries = new MockTimeSeries(bigListOfTicks);
+        ClosePriceIndicator closePrice = new ClosePriceIndicator(bigSeries);
+        EMAIndicator ema = new EMAIndicator(closePrice, 10);
+        // If a StackOverflowError is thrown here, then the RecursiveCachedIndicator
+        // does not work as intended.
+        assertDecimalEquals(ema.getValue(9999), 9994.5);
+
     }
-    
 }

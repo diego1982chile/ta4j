@@ -50,7 +50,7 @@ public class TripleEMAIndicatorTest {
         TripleEMAIndicator tripleEma = new TripleEMAIndicator(closePrice, 5);
 
         assertDecimalEquals(tripleEma.getValue(0), 0.73);
-        assertDecimalEquals(tripleEma.getValue(1), 0.72125);
+        assertDecimalEquals(tripleEma.getValue(1), 0.7213);
         assertDecimalEquals(tripleEma.getValue(2), 0.818);
 
         assertDecimalEquals(tripleEma.getValue(6), 0.8034);

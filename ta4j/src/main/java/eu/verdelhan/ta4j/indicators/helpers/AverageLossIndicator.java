@@ -32,30 +32,19 @@ import eu.verdelhan.ta4j.indicators.CachedIndicator;
  */
 public class AverageLossIndicator extends CachedIndicator<Decimal> {
 
-    private final Indicator<Decimal> indicator;
+    private final CumulatedLossesIndicator cumulatedLosses;
 
     private final int timeFrame;
 
     public AverageLossIndicator(Indicator<Decimal> indicator, int timeFrame) {
         super(indicator);
-        this.indicator = indicator;
+        this.cumulatedLosses = new CumulatedLossesIndicator(indicator, timeFrame);
         this.timeFrame = timeFrame;
     }
 
     @Override
     protected Decimal calculate(int index) {
-        Decimal result = Decimal.ZERO;
-        for (int i = Math.max(1, index - timeFrame + 1); i <= index; i++) {
-            if (indicator.getValue(i).isLessThan(indicator.getValue(i - 1))) {
-                result = result.plus(indicator.getValue(i - 1).minus(indicator.getValue(i)));
-            }
-        }
         final int realTimeFrame = Math.min(timeFrame, index + 1);
-        return result.dividedBy(Decimal.valueOf(realTimeFrame));
-    }
-
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + " timeFrame: " + timeFrame;
+        return cumulatedLosses.getValue(index).dividedBy(Decimal.valueOf(realTimeFrame));
     }
 }

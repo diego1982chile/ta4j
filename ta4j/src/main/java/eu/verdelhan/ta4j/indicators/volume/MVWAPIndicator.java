@@ -20,54 +20,34 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package eu.verdelhan.ta4j.indicators.helpers;
+package eu.verdelhan.ta4j.indicators.volume;
 
-import eu.verdelhan.ta4j.Indicator;
 import eu.verdelhan.ta4j.Decimal;
+import eu.verdelhan.ta4j.Indicator;
 import eu.verdelhan.ta4j.indicators.CachedIndicator;
 import eu.verdelhan.ta4j.indicators.trackers.SMAIndicator;
 
 /**
- * Standard deviation indicator.
- * <p>
- * @see http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:standard_deviation_volatility
+ * The Moving volume weighted average price (MVWAP) Indicator.
+ * @see http://www.investopedia.com/articles/trading/11/trading-with-vwap-mvwap.asp
  */
-public class StandardDeviationIndicator extends CachedIndicator<Decimal> {
+public class MVWAPIndicator extends CachedIndicator<Decimal> {
 
-    private Indicator<Decimal> indicator;
-
-    private int timeFrame;
-
-    private SMAIndicator sma;
-
+    private final Indicator<Decimal> sma;
+    
     /**
      * Constructor.
-     * @param indicator the indicator
+     * @param vwap the vwap
      * @param timeFrame the time frame
      */
-    public StandardDeviationIndicator(Indicator<Decimal> indicator, int timeFrame) {
-        super(indicator);
-        this.indicator = indicator;
-        this.timeFrame = timeFrame;
-        sma = new SMAIndicator(indicator, timeFrame);
+    public MVWAPIndicator(VWAPIndicator vwap, int timeFrame) {
+        super(vwap);
+        sma = new SMAIndicator(vwap, timeFrame);
     }
 
     @Override
     protected Decimal calculate(int index) {
-        final int startIndex = Math.max(0, index - timeFrame + 1);
-        final int numberOfObservations = index - startIndex + 1;
-        Decimal standardDeviation = Decimal.ZERO;
-        Decimal average = sma.getValue(index);
-        for (int i = startIndex; i <= index; i++) {
-            Decimal pow = indicator.getValue(i).minus(average).pow(2);
-            standardDeviation = standardDeviation.plus(pow);
-        }
-        standardDeviation = standardDeviation.dividedBy(Decimal.valueOf(numberOfObservations));
-        return standardDeviation.sqrt();
+        return sma.getValue(index);
     }
 
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + " timeFrame: " + timeFrame;
-    }
 }

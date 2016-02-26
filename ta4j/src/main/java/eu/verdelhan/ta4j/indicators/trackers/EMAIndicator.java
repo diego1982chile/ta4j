@@ -24,13 +24,13 @@ package eu.verdelhan.ta4j.indicators.trackers;
 
 import eu.verdelhan.ta4j.Indicator;
 import eu.verdelhan.ta4j.Decimal;
-import eu.verdelhan.ta4j.indicators.CachedIndicator;
+import eu.verdelhan.ta4j.indicators.RecursiveCachedIndicator;
 
 /**
  * Exponential moving average indicator.
  * <p>
  */
-public class EMAIndicator extends CachedIndicator<Decimal> {
+public class EMAIndicator extends RecursiveCachedIndicator<Decimal> {
 
     private final Indicator<Decimal> indicator;
 
@@ -38,6 +38,11 @@ public class EMAIndicator extends CachedIndicator<Decimal> {
 
     private final Decimal multiplier;
 
+    /**
+     * Constructor.
+     * @param indicator an indicator
+     * @param timeFrame the EMA time frame
+     */
     public EMAIndicator(Indicator<Decimal> indicator, int timeFrame) {
         super(indicator);
         this.indicator = indicator;
@@ -79,10 +84,5 @@ public class EMAIndicator extends CachedIndicator<Decimal> {
             emaValue = indicator.getValue(i).minus(emaValue).multipliedBy(multiplier).plus(emaValue);
         }
         return emaValue;
-    }
-
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + " timeFrame: " + timeFrame;
     }
 }
